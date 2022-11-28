@@ -6,3 +6,5 @@
 - Use mininet to implement a network application that allows a user to use C to request a list of media files stored on S, and select one that the user is interested in. C then asks R to request a streaming session with S, and S starts streaming the selected file to R for rendering (note the limitation of R mentioned above). During a rendering session, the user can use C to control the rendering, e.g. pause/resume/start-from-the beginning. 
 - C, R and S must run on different hosts simulated using mininet and use the protocol designed by the team for communications.
 - For media file types, at the minimum text files must be supported but audio (e.g. MP3s) and video (e.g. MP4) files should be considered and if implemented will earn extra credits.
+
+### General Flow
