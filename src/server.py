@@ -2,9 +2,33 @@ import socket
 import threading
 import protocol
 import os.path
+import json
+
+fileHolder = {
+    "files": [{
+            "id": 1,
+            "filename": "test.txt",
+            "filetype": "text",
+            "description": "the test file to be read"
+        },
+        {
+            "id": 2,
+            "filename": "notReal.txt",
+            "filetype": "text",
+            "description": "not a real file"
+        },
+        {
+            "id": 3,
+            "filename": "aLie.txt",
+            "filetype": "text",
+            "description": "also not a real file"
+        }
+    ]
+}
 
 def main():
     clientConnect()
+    renderConnect()
 
 
 #############################################################################################################
@@ -23,8 +47,10 @@ def clientConnect():
     with connect:
         print(f"new connection from: {addr}")
         connect.recv(1024)
-        msg = "test.txt notReal.txt aLie.txt\n"
+        msg = json.dumps(fileHolder)
         connect.send(msg)
+    connect.close()
+
 
 #############################################################################################################
 # Function:            renderConnect
@@ -42,9 +68,25 @@ def renderConnect():
     with connect:
         print(f"new connection from: {addr}")
         request = connect.recv(1024)
-        os.path.isfile(request)
-        msg = "i'm not a file, you shouldnt see me"
-        connect.send(msg)
+        if os.path.isfile(request):
+            sendRender(connect, fileName)
+        else:
+            connect.send("missing file")
+    connect.close()
 
 
-        
+#############################################################################################################
+# Function:            sendRender
+# Author:              Troy Curtsinger (tjc190001)
+# Date Started:        11/29/2022
+#
+# Description:
+# handles file rendering
+#
+# @param    connect      connection         the connection to the renderer
+# @param    fileName     string             the name of the requested file (assumed to exist) 
+#############################################################################################################
+def sendRender(connect, fileName):
+    file = open(fileName, "r")
+    for line in file:
+        connect.send(line)
