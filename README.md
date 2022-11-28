@@ -8,3 +8,12 @@
 - For media file types, at the minimum text files must be supported but audio (e.g. MP3s) and video (e.g. MP4) files should be considered and if implemented will earn extra credits.
 
 ### General Flow
+![IMG_0127](https://user-images.githubusercontent.com/58368335/204347787-938aa3c3-7051-48ed-a79e-2f3394376971.jpg)
+
+1. Client sends a request for a list of files to the server
+2. Server sends back a list of files to the client
+3. Client sends a render request to the Render server
+4. Render requests file from server
+5. Server sends part of the file
+    * repeat until all of files are sent
+6. Sends rendered data to client.
