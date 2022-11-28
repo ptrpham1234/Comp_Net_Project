@@ -68,6 +68,7 @@ def renderConnect():
     with connect:
         print(f"new connection from: {addr}")
         request = connect.recv(1024)
+        fileName = request
         if os.path.isfile(request):
             sendRender(connect, fileName)
         else:
@@ -84,9 +85,10 @@ def renderConnect():
 # handles file rendering
 #
 # @param    connect      connection         the connection to the renderer
-# @param    fileName     string             the name of the requested file (assumed to exist) 
+# @param    fileName     string             the name of the requested file (expected to exist) 
 #############################################################################################################
 def sendRender(connect, fileName):
     file = open(fileName, "r")
     for line in file:
         connect.send(line)
+    file.close()
