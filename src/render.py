@@ -4,11 +4,9 @@ import protocol
 
 
 def main():
-    clientSocket = establishConnection(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
-    fileName = clientConnect(clientSocket)
-    serverSend(fileName)
-
-
+    clientSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
+    fileID = clientConnect(clientSocket)
+    serverSend(fileID)
 
 
 #############################################################################################################
@@ -17,31 +15,15 @@ def main():
 # Date Started:        08/10/2022
 #
 # Description:
-# Attempts to connect to the server
-#############################################################################################################
-def establishConnection(destinationIP, destinationPort):
-    try:
-        # AF_INET for IPv4          SOCK_DGRAM for UDP
-        serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSocket.bind((destinationIP, destinationPort))
-        return serverSocket
-
-    except socket.error:
-        print("Unable to connect to server")
-
-#############################################################################################################
-# Function:            establishConnection
-# Author:              Peter Pham (pxp180041)
-# Date Started:        08/10/2022
-#
-# Description:
-# Attempts to connect to the server
+# Receive the file id to stream from the user and then close the connection
 #############################################################################################################
 def clientConnect(clientSocket):
     clientSocket.listen()
     connection, ipaddress = clientSocket.accept()
     print("received connection from: " + str(ipaddress))
-    return connection.recv(1024).decode()
+    fileID = connection.recv(1024).decode()
+    connection.close()
+    return fileID
 
 
 #############################################################################################################
@@ -57,6 +39,17 @@ def serverSend(fileName):
     serverSocket.connect((protocol.SERVER_IP, protocol.SERVER_PORT))
     serverSocket.sendall(fileName)
 
+
+#############################################################################################################
+# Function:            establishConnection
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Attempts to connect to the server
+#############################################################################################################
+def streamReceive():
+    pass
 
 
 if __name__ == "__main__":

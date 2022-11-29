@@ -4,31 +4,12 @@ import protocol
 
 
 def main():
-    serverSocket = establishConnection(protocol.SERVER_IP, protocol.SERVER_PORT)
+    serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT)
     choice = menu()
     if choice == 1:
         sendListRequest(serverSocket)
         fileName = fileSelection()
         sendFileRequest(fileName)
-
-
-#############################################################################################################
-# Function:            establishConnection
-# Author:              Peter Pham (pxp180041)
-# Date Started:        08/10/2022
-#
-# Description:
-# Attempts to connect to the server
-#############################################################################################################
-def establishConnection(destinationIP, destinationPort):
-    try:
-        # AF_INET for IPv4          SOCK_DGRAM for UDP
-        serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSocket.connect((destinationIP, destinationPort))
-        return serverSocket
-
-    except socket.error:
-        print("Unable to connect to server")
 
 
 #############################################################################################################
@@ -40,7 +21,7 @@ def establishConnection(destinationIP, destinationPort):
 # Display a menu where the user can decide what to do
 #############################################################################################################
 def menu():
-    while True: # for error checking
+    while True:  # for error checking
         print("1. Get file names")
         print("2. Request File")
         print("3. Exit")
@@ -48,8 +29,12 @@ def menu():
             num = int(input("Enter a number: "))
             if num > 0 & num < 4:
                 return num
+            else:
+                print("not valid try again")
+                continue
         except ValueError:
             print("Not a number try again.")
+            continue
 
 
 #############################################################################################################
@@ -64,12 +49,8 @@ def menu():
 # @param    serverSocket    socket  contains the socket needed to send the request
 #############################################################################################################
 def sendListRequest(serverSocket):
-
     serverSocket.sendall(protocol.LIST_REQUEST)
-    serverSocket.listen()
-    connectSocket, addr = serverSocket.accept()
-
-    msg = connectSocket.recv(1024)
+    msg = serverSocket.recv(1024)
 
     print("List of files:")
     with open("file.txt", "wb") as file:
@@ -90,7 +71,15 @@ def sendListRequest(serverSocket):
 # Asks what file the user wants to stream
 #############################################################################################################
 def fileSelection():
-    return input("Enter file to request")
+    while True:  # for error checking
+        print("1. Get file names")
+        print("2. Request File")
+        print("3. Exit")
+        try:
+            num = int(input("Enter fileID to request: "))
+            return num
+        except ValueError:
+            print("Not a number try again.")
 
 
 #############################################################################################################
@@ -102,7 +91,7 @@ def fileSelection():
 # Asks what file the user wants to stream
 #############################################################################################################
 def sendFileRequest(fileName):
-    renderSocket = establishConnection(protocol.RENDER_IP, protocol.RENDER_PORT)
+    renderSocket = protocol.senderSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
     renderSocket.sendall(fileName)
     done = False
 
@@ -115,9 +104,6 @@ def sendFileRequest(fileName):
             done = True
         else:
             print(msg.decode())
-
-
-
 
 
 if __name__ == "__main__":
