@@ -4,10 +4,12 @@ import protocol
 
 
 def main():
-    serverSocket = establishConnection()
+    serverSocket = establishConnection(protocol.SERVER_IP, protocol.SERVER_PORT)
     choice = menu()
     if choice == 1:
         sendListRequest(serverSocket)
+        fileName = fileSelection()
+        sendFileRequest(fileName)
 
 
 #############################################################################################################
@@ -18,11 +20,11 @@ def main():
 # Description:
 # Attempts to connect to the server
 #############################################################################################################
-def establishConnection():
+def establishConnection(destinationIP, destinationPort):
     try:
         # AF_INET for IPv4          SOCK_DGRAM for UDP
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSocket.connect((protocol.SERVER_IP, protocol.SERVER_PORT))
+        serverSocket.connect((destinationIP, destinationPort))
         return serverSocket
 
     except socket.error:
@@ -38,7 +40,7 @@ def establishConnection():
 # Display a menu where the user can decide what to do
 #############################################################################################################
 def menu():
-    while True:
+    while True: # for error checking
         print("1. Get file names")
         print("2. Request File")
         print("3. Exit")
@@ -69,10 +71,51 @@ def sendListRequest(serverSocket):
 
     msg = connectSocket.recv(1024)
 
-    # TODO: Print files here after knowing the contents sent by the server
-    print("List of files")
-    for file in msg.split().decode():
-        print(file)
+    print("List of files:")
+    with open("file.txt", "wb") as file:
+        for rcvFile in msg.split():
+            file.write(rcvFile)
+
+    with open("file.txt", "rb") as file:
+        for line in file.readline():
+            print(line)
+
+
+#############################################################################################################
+# Function:            fileSelection
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Asks what file the user wants to stream
+#############################################################################################################
+def fileSelection():
+    return input("Enter file to request")
+
+
+#############################################################################################################
+# Function:            sendFileRequest
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Asks what file the user wants to stream
+#############################################################################################################
+def sendFileRequest(fileName):
+    renderSocket = establishConnection(protocol.RENDER_IP, protocol.RENDER_PORT)
+    renderSocket.sendall(fileName)
+    done = False
+
+    while not done:
+        renderSocket.listen()
+        connectSocket, addr = renderSocket.accept()
+
+        msg = connectSocket.recv(1024)
+        if msg.decode() == "done":
+            done = True
+        else:
+            print(msg.decode())
+
 
 
 
