@@ -17,3 +17,8 @@
 5. Server sends part of the file
     * repeat until all of files are sent
 6. Sends rendered data to client.
+
+
+
+
+![YQ5ES](https://user-images.githubusercontent.com/58368335/204420134-8ad152d3-fe19-4a62-9be5-48530b801de7.png)
