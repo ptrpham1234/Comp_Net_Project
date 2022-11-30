@@ -1,8 +1,9 @@
 import socket
 
+CONTROLLER_PORT = 4817
+RENDER_PORT = 4815
 SERVER_PORT = 4816
-RENDER_PORT = 4816
-CONTROLLER_PORT = 4816
+SERVER_PORT_2 = 4814
 SERVER_IP = '10.0.0.1'
 RENDER_IP = '10.0.0.2'
 CONTROLLER_IP = '10.0.0.3'
@@ -16,7 +17,6 @@ CONTINUE = 2
 RESTART = 3
 
 
-
 #############################################################################################################
 # Function:            receiverSocket
 # Author:              Peter Pham (pxp180041)
@@ -26,14 +26,14 @@ RESTART = 3
 # Creates a socket to receive data from the connection
 #############################################################################################################
 def receiverSocket(destinationIP, destinationPort):
-	try:
-		# AF_INET for IPv4          SOCK_DGRAM for UDP
-		serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		serverSocket.bind((destinationIP, destinationPort))
-		return serverSocket
+    try:
+        # AF_INET for IPv4          SOCK_DGRAM for UDP
+        serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serverSocket.bind((destinationIP, destinationPort))
+        return serverSocket
 
-	except socket.error:
-		print("Unable to connect to server")
+    except socket.error:
+        print("Unable to connect to server")
 
 
 #############################################################################################################
@@ -45,14 +45,15 @@ def receiverSocket(destinationIP, destinationPort):
 # Creates a socket to send data
 #############################################################################################################
 def senderSocket(destinationIP, destinationPort):
-	try:
-		# AF_INET for IPv4          SOCK_DGRAM for UDP
-		serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		serverSocket.connect((destinationIP, destinationPort))
-		return serverSocket
+    try:
+        # AF_INET for IPv4          SOCK_DGRAM for UDP
+        serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serverSocket.connect((destinationIP, destinationPort))
+        return serverSocket
 
-	except socket.error:
-		print("Unable to connect to server")
+    except socket.error:
+        print("Unable to connect to server")
+
 
 #############################################################################################################
 # Function:            senderSocketUDP
@@ -63,11 +64,11 @@ def senderSocket(destinationIP, destinationPort):
 # Creates a socket to send data but this time it's a UDP connection
 #############################################################################################################
 def senderSocketUDP(destinationIP, destinationPort):
-	try:
-		# AF_INET for IPv4          SOCK_DGRAM for UDP
-		serverSocket = socket.socket(socket.SOCK_DGRAM, socket.SOCK_STREAM)
-		serverSocket.connect((destinationIP, destinationPort))
-		return serverSocket
+    try:
+        # AF_INET for IPv4          SOCK_DGRAM for UDP
+        serverSocket = socket.socket(socket.SOCK_DGRAM, socket.SOCK_STREAM)
+        serverSocket.connect((destinationIP, destinationPort))
+        return serverSocket
 
-	except socket.error:
-		print("Unable to connect to server")
+    except socket.error:
+        print("Unable to connect to server")

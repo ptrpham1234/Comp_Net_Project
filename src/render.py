@@ -1,10 +1,11 @@
 import socket
 import threading
 import protocol
+import time
 
 
 def main():
-	clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.CONTROLLER_PORT)
+	clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
 	fileID = clientConnect(clientSocket)
 	serverSend(fileID)
 
@@ -23,6 +24,7 @@ def clientConnect(clientSocket):
 	print("received connection from: " + str(ipaddress))
 	fileID = connection.recv(1024).decode()
 	connection.close()
+	clientSocket.close()
 	return fileID
 
 
@@ -35,18 +37,19 @@ def clientConnect(clientSocket):
 # Attempts to connect to the server
 #############################################################################################################
 def serverSend(fileID):
-	serverSocket = protocol.receiverSocket(protocol.SERVER_IP, protocol.SERVER_PORT)
-	serverSocket.sendall(fileID.encode())
+	time.sleep(5)  # Necessary !! DO NOT REMOVE
+	# send ID to server to get file from
+	serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT_2)
+	serverSocket.sendall(fileID.encode())  # send the ID
 	done = False
-	controllerSend = protocol.senderSocketUDP(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
+
+	controllerSend = protocol.senderSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
 
 	while not done:
+		time.sleep(.5)
 		msg = serverSocket.recv(1024)
-		if msg.decode() == "done":
-			controllerSend.sendall(msg)
-		else:
-			controllerSend.sendall(msg)
-
+		print(msg.decode())
+		controllerSend.sendall(msg)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import json
 import socket
 import threading
 import protocol
+import time
 
 
 def main():
@@ -52,7 +53,7 @@ def menu():
 #############################################################################################################
 def sendListRequest(serverSocket):
 	serverSocket.sendall(str(protocol.LIST_REQUEST).encode())
-	msg = serverSocket.recv(1024)
+	msg = serverSocket.recv(1024).decode()
 
 	print("List of files:")
 	print(json.loads(msg))
@@ -85,7 +86,7 @@ def fileSelection():
 #############################################################################################################
 def sendFileRequest(fileID):
 	renderSocket = protocol.senderSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
-	renderSocket.sendall(fileID)
+	renderSocket.sendall(str(fileID).encode())
 	renderSocket.close()
 
 
@@ -98,14 +99,20 @@ def sendFileRequest(fileID):
 # Asks what file the user wants to stream
 #############################################################################################################
 def receiveStream():
-	streamSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
+	# streamSocket = protocol.receiverSocket('0.0.0.0', 4815)
 	done = False
+	streamSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
+	streamSocket.listen()
+	connection, ipAddress = streamSocket.accept()
+	print("Streaming from: " + str(ipAddress))
 
 	while not done:
-		msg = streamSocket.recv(1024).decode()
+		msg = connection.recv(1024).decode()
+		print(msg)
 		if msg != "done":
 			print(msg)
 		else:
+			print("streaming done")
 			streamSocket.close()
 			done = True
 

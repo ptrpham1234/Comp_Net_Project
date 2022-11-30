@@ -25,7 +25,7 @@ class Files:
 	def getList(self):
 		return self.files
 
-	def getFileName(self, ID):
+	def getFileDict(self, ID):
 		for file in self.files.get("files"):
 			if file["id"] == ID:
 				return file

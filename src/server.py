@@ -5,13 +5,13 @@ import time
 import protocol
 import os.path
 import json
+import time
 from files import Files
 
 
 def main():
-	fileLists = Files()
-	clientConnect(fileLists.getList())
-	renderConnect(fileLists)
+    fileLists = Files()
+    clientConnect(fileLists.getList())
 
 
 #############################################################################################################
@@ -23,16 +23,19 @@ def main():
 # creates the client socket and manages the list call
 #############################################################################################################
 def clientConnect(fileHolder):
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSock:
-		clientSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
-		clientSock.listen()
-		connect, addr = clientSock.accept()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSock:
+        clientSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
+        clientSock.listen()
+        connect, addr = clientSock.accept()
 
-		print(f"new connection from: {addr}")
-		connect.recv(1024)
-		msg = json.dumps(fileHolder)
-		connect.send(msg)
-		connect.close()
+        print(f"new connection from: {addr}")
+        connect.recv(1024)
+        msg = str(json.dumps(fileHolder))
+        connect.send(msg.encode())
+        connect.close()
+        clientSock.close()
+    time.sleep(1)
+    renderConnect(Files())
 
 
 #############################################################################################################
@@ -44,23 +47,30 @@ def clientConnect(fileHolder):
 # creates the render socket and manages the calls to render files
 #############################################################################################################
 def renderConnect(fileList):
-	mainDir = os.path.dirname(os.path.dirname(os.getcwd()))
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as renderSock:
-		renderSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
-		renderSock.listen()
-		connect, addr = renderSock.accept()
-		print(f"new connection from: {addr}")
-		fileID = int(connect.recv(1024).decode())
 
-		file = fileList.getFileDict(fileID)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as renderSock:
+        renderSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT_2))
+        renderSock.listen()
+        connect, addr = renderSock.accept()
+        print(f"new connection from: {addr}")
+        fileID = int(connect.recv(1024).decode())
 
-		if file:
-			with open(os.path.join(mainDir, "/resources/", file["filename"]), "r") as returnFile:
-				for lines in returnFile.readlines():
-					time.sleep(0.2)
-					connect.sendall(lines.encode())
-				connect.sendall("done".encode())
-		else:
-			connect.send("missing file")
-		connect.close()
+        file = fileList.getFileDict(fileID)
 
+        if file:
+            try:
+                with open(file["filename"], "r") as returnFile:
+                    for lines in returnFile.readlines():
+                        time.sleep(.8)
+                        print(lines)
+                        connect.sendall(lines.encode())
+                    connect.sendall("done".encode())
+            except BrokenPipeError:
+                print("Connection lost to Render while streaming")
+        else:
+            connect.send("missing file")
+        connect.close()
+
+
+if __name__ == "__main__":
+    main()
