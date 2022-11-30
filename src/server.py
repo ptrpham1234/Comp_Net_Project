@@ -1,34 +1,17 @@
 import socket
 import threading
+import time
+
 import protocol
 import os.path
 import json
+import time
+from files import Files
 
-fileHolder = {
-    "files": [{
-            "id": 1,
-            "filename": "test.txt",
-            "filetype": "text",
-            "description": "the test file to be read"
-        },
-        {
-            "id": 2,
-            "filename": "notReal.txt",
-            "filetype": "text",
-            "description": "not a real file"
-        },
-        {
-            "id": 3,
-            "filename": "aLie.txt",
-            "filetype": "text",
-            "description": "also not a real file"
-        }
-    ]
-}
 
 def main():
-    clientConnect()
-    renderConnect()
+    fileLists = Files()
+    clientConnect(fileLists.getList())
 
 
 #############################################################################################################
@@ -39,17 +22,20 @@ def main():
 # Description:
 # creates the client socket and manages the list call
 #############################################################################################################
-def clientConnect():
+def clientConnect(fileHolder):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSock:
-        socket.bind((protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT))
+        clientSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
         clientSock.listen()
-    connect, addr = clientSock.accept()
-    with connect:
+        connect, addr = clientSock.accept()
+
         print(f"new connection from: {addr}")
         connect.recv(1024)
-        msg = json.dumps(fileHolder)
-        connect.send(msg)
-    connect.close()
+        msg = str(json.dumps(fileHolder))
+        connect.send(msg.encode())
+        connect.close()
+        clientSock.close()
+    time.sleep(1)
+    renderConnect(Files())
 
 
 #############################################################################################################
@@ -60,35 +46,31 @@ def clientConnect():
 # Description:
 # creates the render socket and manages the calls to render files
 #############################################################################################################
-def renderConnect():
+def renderConnect(fileList):
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as renderSock:
-        socket.bind((protocol.RENDER_IP, protocol.RENDER_PORT))
+        renderSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT_2))
         renderSock.listen()
-    connect, addr = renderSock.accept()
-    with connect:
+        connect, addr = renderSock.accept()
         print(f"new connection from: {addr}")
-        request = connect.recv(1024)
-        fileName = request
-        if os.path.isfile(request):
-            sendRender(connect, fileName)
+        fileID = int(connect.recv(1024).decode())
+
+        file = fileList.getFileDict(fileID)
+
+        if file:
+            try:
+                with open(file["filename"], "r") as returnFile:
+                    for lines in returnFile.readlines():
+                        time.sleep(.8)
+                        print(lines)
+                        connect.sendall(lines.encode())
+                    connect.sendall("done".encode())
+            except BrokenPipeError:
+                print("Connection lost to Render while streaming")
         else:
             connect.send("missing file")
-    connect.close()
+        connect.close()
 
 
-#############################################################################################################
-# Function:            sendRender
-# Author:              Troy Curtsinger (tjc190001)
-# Date Started:        11/29/2022
-#
-# Description:
-# handles file rendering
-#
-# @param    connect      connection         the connection to the renderer
-# @param    fileName     string             the name of the requested file (expected to exist) 
-#############################################################################################################
-def sendRender(connect, fileName):
-    file = open(fileName, "r")
-    for line in file:
-        connect.send(line)
-    file.close()
+if __name__ == "__main__":
+    main()
