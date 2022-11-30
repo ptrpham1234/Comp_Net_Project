@@ -58,18 +58,47 @@ def renderConnect(fileList):
         file = fileList.getFileDict(fileID)
 
         if file:
+            state = [True,False] #Sending data | restarting
+            print('hi2')
+            control = threading.Thread(target=controlsThread,args=(state,))
+            control.start()
             try:
                 with open(file["filename"], "r") as returnFile:
-                    for lines in returnFile.readlines():
+                    print('hi')
+                    lines = returnFile.readline()
+                    while(lines):
                         time.sleep(.8)
-                        print(lines)
+                        while(state[0] is False):
+                            time.sleep(.8)
+                        if(state[1]):
+                            state[1] = False
+                            returnFile.seek(0,0)
+                            lines = returnFile.readline()
                         connect.sendall(lines.encode())
+                        lines = returnFile.readline()
                     connect.sendall("done".encode())
             except BrokenPipeError:
                 print("Connection lost to Render while streaming")
         else:
             connect.send("missing file")
         connect.close()
+
+
+def controlsThread(state):
+    controls = protocol.receiverSocket(protocol.SERVER_IP,4819)
+    controls.listen()
+    while(True):
+        connection, ipaddress = controls.accept()
+        print("connected to" + str(ipaddress))
+        command = connection.recv(1024).decode()
+        print('Recieved the command to: '+str(command))
+        if command == 'pause':
+            state[0] = False
+        elif command == 'resume':
+            state[0] = True
+        elif command == 'restart':
+            state[1] = True
+
 
 
 if __name__ == "__main__":

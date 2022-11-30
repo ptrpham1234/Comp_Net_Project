@@ -5,9 +5,9 @@ import time
 
 
 def main():
-	clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
-	fileID = clientConnect(clientSocket)
-	serverSend(fileID)
+    clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
+    fileID = clientConnect(clientSocket)
+    serverSend(fileID)
 
 
 #############################################################################################################
@@ -19,13 +19,13 @@ def main():
 # Receive the file id to stream from the user and then close the connection
 #############################################################################################################
 def clientConnect(clientSocket):
-	clientSocket.listen()
-	connection, ipaddress = clientSocket.accept()
-	print("received connection from: " + str(ipaddress))
-	fileID = connection.recv(1024).decode()
-	connection.close()
-	clientSocket.close()
-	return fileID
+    clientSocket.listen()
+    connection, ipaddress = clientSocket.accept()
+    print("received connection from: " + str(ipaddress))
+    fileID = connection.recv(1024).decode()
+    connection.close()
+    clientSocket.close()
+    return fileID
 
 
 #############################################################################################################
@@ -37,20 +37,47 @@ def clientConnect(clientSocket):
 # Attempts to connect to the server
 #############################################################################################################
 def serverSend(fileID):
-	time.sleep(5)  # Necessary !! DO NOT REMOVE
-	# send ID to server to get file from
-	serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT_2)
-	serverSocket.sendall(fileID.encode())  # send the ID
-	done = False
+    time.sleep(5)  # Necessary !! DO NOT REMOVE
+    # send ID to server to get file from
+    serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT_2)
+    serverSocket.sendall(fileID.encode())  # send the ID
+    done = False
 
-	controllerSend = protocol.senderSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
+    controllerSend = protocol.senderSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
 
-	while not done:
-		time.sleep(.5)
-		msg = serverSocket.recv(1024)
-		print(msg.decode())
-		controllerSend.sendall(msg)
+    state = [True]
+    control = threading.Thread(target=controlsThread,args=(state,))
+    control.start()
+    while not done:
+        if state[0]:
+            time.sleep(.5)
+            msg = serverSocket.recv(1024).decode()
 
+            print(msg)
+            controllerSend.sendall(msg.encode())
+
+
+def controlsThread(state):
+    controls = protocol.receiverSocket(protocol.RENDER_IP,4818)
+    controls.listen()
+    while(True):
+        connection, ipaddress = controls.accept()
+        print("connected to" + str(ipaddress))
+        command = connection.recv(1024).decode()
+        print('Recieved the command to: ' + str(command))
+        if command == 'pause':
+            state[0] = False
+            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
+            notify.sendall('pause'.encode())
+            notify.close()
+        elif command == 'resume':
+            state[0] = True
+            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
+            notify.sendall('resume'.encode())
+
+        elif command == 'restart':
+            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
+            notify.sendall('restart'.encode())
 
 if __name__ == "__main__":
-	main()
+    main()
