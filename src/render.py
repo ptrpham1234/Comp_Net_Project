@@ -5,10 +5,10 @@ import time
 
 
 def main():
-    while True:
-        clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
-        fileID = clientConnect(clientSocket)
-        serverSend(fileID)
+
+    clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
+    fileID = clientConnect(clientSocket)
+    serverSend(fileID)
 
 
 #############################################################################################################
@@ -82,16 +82,19 @@ def controlsThread(state):
             print('Received the command to: ' + str(command))
             if command == 'pause':
                 state[0] = False
-                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify = protocol.senderSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
                 notify.sendall('pause'.encode())
                 notify.close()
             elif command == 'resume':
                 state[0] = True
-                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify = protocol.senderSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
                 notify.sendall('resume'.encode())
             elif command == 'restart':
-                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify = protocol.senderSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
                 notify.sendall('restart'.encode())
+            elif command == 'stop':
+                notify = protocol.senderSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
+                notify.sendall('stop'.encode())
 
         except TimeoutError:
             if state[1]:

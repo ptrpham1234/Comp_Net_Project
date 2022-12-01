@@ -8,31 +8,28 @@ import time
 
 def main():
     fileList = None
-    while True:
-        serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT)
+    serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT)
 
-        choice = menu()
-        if choice == 1:
-            fileList = sendListRequest(serverSocket)
-            fileID = fileSelection()
-            sendFileRequest(fileID)
-            receiveStream()
-            print("closing connections...")
-            time.sleep(2)
-            sys.stdin.flush()
-            print("type any value to clear buffer")
-        elif choice == 2:
-            printFileList(fileList)
-        elif choice == 3:
-            printFileList(fileList)
-            fileID = fileSelection()
-            sendFileRequest(fileID)
-            receiveStream()
-            print("closing connections...")
-            time.sleep(2)
-            sys.stdin.flush()
-        else:
-            break
+    choice = menu()
+    if choice == 1:
+        fileList = sendListRequest(serverSocket)
+        fileID = fileSelection()
+        sendFileRequest(fileID)
+        receiveStream()
+        print("closing connections...")
+        time.sleep(2)
+        sys.stdin.flush()
+    elif choice == 2:
+        printFileList(fileList)
+    elif choice == 3:
+        printFileList(fileList)
+        fileID = fileSelection()
+        sendFileRequest(fileID)
+        receiveStream()
+        print("closing connections...")
+        time.sleep(2)
+        sys.stdin.flush()
+
 
 
 #############################################################################################################
@@ -176,16 +173,20 @@ class KeyboardThread(threading.Thread):
 def my_callback(inp):
     print('You entered: ', inp)
     if inp == 'pause':
-        notify = protocol.senderSocket(protocol.RENDER_IP, 4818)
+        notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
         notify.sendall('pause'.encode())
         notify.close()
     elif inp == 'resume':
-        notify = protocol.senderSocket(protocol.RENDER_IP, 4818)
+        notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
         notify.sendall('resume'.encode())
         notify.close()
     elif inp == 'restart':
-        notify = protocol.senderSocket(protocol.RENDER_IP, 4818)
+        notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
         notify.sendall('restart'.encode())
+        notify.close()
+    elif inp == 'stop':
+        notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
+        notify.sendall('stop'.encode())
         notify.close()
 
 
@@ -199,6 +200,8 @@ def my_callback(inp):
 #############################################################################################################
 def receiveStream():
     done = False
+    print("Type \"play\", \"pause\" or \"stop\" followed by enter anytime to play or pause the stream.")
+    print("Contacting Server...")
     streamSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
     streamSocket.listen()
     connection, ipAddress = streamSocket.accept()
@@ -226,3 +229,5 @@ def receiveStream():
 
 if __name__ == "__main__":
     main()
+    print("Thanks for streaming! Bye!")
+    print("Press enter to exit")
