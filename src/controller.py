@@ -183,7 +183,7 @@ def my_callback(inp):
         notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
         notify.sendall('pause'.encode())
         notify.close()
-    elif inp == 'resume':
+    elif inp == 'play' or inp == "resume":
         notify = protocol.senderSocket(protocol.RENDER_IP, protocol.PLAY_PAUSE_CONTROLLER)
         notify.sendall('resume'.encode())
         notify.close()
@@ -207,7 +207,7 @@ def my_callback(inp):
 #############################################################################################################
 def receiveStream():
     done = False
-    print("Type \"play\", \"pause\" or \"stop\" followed by enter anytime to play or pause the stream.")
+    print("Type \"play\", \"pause\", \"stop\", or \"restart\" followed by enter anytime to play or pause the stream.")
     print("Contacting Server...")
     streamSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
     streamSocket.listen()
