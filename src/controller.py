@@ -35,6 +35,7 @@ def main():
 #############################################################################################################
 # Function:            Menu
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -61,6 +62,7 @@ def menu():
 #############################################################################################################
 # Function:            sendRequest
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -83,6 +85,8 @@ def sendListRequest(serverSocket):
 #############################################################################################################
 # Function:            sendRequest
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
+#                      Troy Curtsinger (tjc190001)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -109,6 +113,7 @@ def printFileList(msg):
 #############################################################################################################
 # Function:            fileSelection
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -126,6 +131,7 @@ def fileSelection():
 #############################################################################################################
 # Function:            sendFileRequest
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -140,6 +146,7 @@ def sendFileRequest(fileID):
 #############################################################################################################
 # Function:            sendFileRequest
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:

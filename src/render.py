@@ -32,6 +32,7 @@ def clientConnect(clientSocket):
 #############################################################################################################
 # Function:            establishConnection
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:
@@ -65,6 +66,7 @@ def serverSend(fileID):
 #############################################################################################################
 # Function:            establishConnection
 # Author:              Peter Pham (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        08/10/2022
 #
 # Description:

@@ -18,6 +18,8 @@ def main():
 #############################################################################################################
 # Function:            clientConnect
 # Author:              Troy Curtsinger (tjc190001)
+#                      Zachary Tooker (zbt180000)
+#                      Peter Pham  (pxp180041)
 # Date Started:        11/29/2022
 #
 # Description:
@@ -41,6 +43,8 @@ def clientConnect(fileHolder):
 #############################################################################################################
 # Function:            renderConnect
 # Author:              Troy Curtsinger (tjc190001)
+#                      Peter Pham  (pxp180041)
+#                      Zachary Tooker (zbt180000)
 # Date Started:        11/29/2022
 #
 # Description:
@@ -86,12 +90,14 @@ def renderConnect(fileList):
     renderSock.close()
 
 #############################################################################################################
-# Function:            renderConnect
-# Author:              Troy Curtsinger (tjc190001)
+# Function:            controlsThread
+# Author:              Peter Pham  (pxp180041)
+#                      Zachary Tooker (zbt180000)
+#                      Troy Curtsinger (tjc190001)
 # Date Started:        11/29/2022
 #
 # Description:
-# creates the render socket and manages the calls to render files
+# creates a socket that waits for control calls when streaming then updates to the main thread
 #############################################################################################################
 def controlsThread(state):
     controls = protocol.receiverSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
