@@ -5,13 +5,14 @@ class Files:
                 "id": 1,
                 "filename": "test.txt",
                 "filetype": "text",
-                "description": "the test file to be read"
+                "description": "the test file to be read. Contains huge amount of characters so will take longer to "
+                               "send "
             },
                 {
                     "id": 2,
                     "filename": "notReal.txt",
                     "filetype": "text",
-                    "description": "not a real file"
+                    "description": "smaller file. 14 lines"
                 },
                 {
                     "id": 3,

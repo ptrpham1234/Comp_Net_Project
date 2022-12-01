@@ -10,10 +10,9 @@ from files import Files
 
 
 def main():
-    while True:
-        fileLists = Files()
-        clientConnect(fileLists.getList())
 
+    fileLists = Files()
+    clientConnect(fileLists.getList())
 
 
 #############################################################################################################
@@ -58,7 +57,7 @@ def renderConnect(fileList):
     file = fileList.getFileDict(fileID)
 
     if file:
-        state = [True, False, False]  # Sending data | restarting | done sending (for Thread)
+        state = [True, False, False, False]  # Sending data | restarting | done sending (for Thread) | stop
         control = threading.Thread(target=controlsThread, args=(state,))
         control.start()
         try:
@@ -72,6 +71,8 @@ def renderConnect(fileList):
                         state[1] = False
                         returnFile.seek(0, 0)
                         lines = returnFile.readline()
+                    if state[3]:
+                        break
                     connect.sendall(lines.encode())
                     lines = returnFile.readline()
                 time.sleep(.8)
@@ -93,7 +94,7 @@ def renderConnect(fileList):
 # creates the render socket and manages the calls to render files
 #############################################################################################################
 def controlsThread(state):
-    controls = protocol.receiverSocket(protocol.SERVER_IP, 4819)
+    controls = protocol.receiverSocket(protocol.SERVER_IP, protocol.PLAY_PAUSE_SERVER)
     controls.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #controls.settimeout(1)
     controls.listen()
@@ -109,6 +110,8 @@ def controlsThread(state):
                 state[0] = True
             elif command == 'restart':
                 state[1] = True
+            elif command == 'stop':
+                state[3] = True
         except TimeoutError:
             if state[2]:
                 break
