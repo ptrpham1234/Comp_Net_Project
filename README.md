@@ -22,3 +22,7 @@
 
 
 ![YQ5ES](https://user-images.githubusercontent.com/58368335/204420134-8ad152d3-fe19-4a62-9be5-48530b801de7.png)
+
+
+## How to run:
+Start an Ubuntu or Mininet instance. Make sure python 3.0 is install and run the command `sudo python start.py`. This should start Mininet and then inside of Mininet type in the following command `h3 python controller.py` and that should start the controller.
