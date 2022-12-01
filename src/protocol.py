@@ -29,11 +29,12 @@ def receiverSocket(destinationIP, destinationPort):
     try:
         # AF_INET for IPv4          SOCK_DGRAM for UDP
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         serverSocket.bind((destinationIP, destinationPort))
         return serverSocket
 
-    except socket.error:
-        print("Unable to connect to server")
+    except Exception as e:
+        print(e)
 
 
 #############################################################################################################
@@ -48,11 +49,12 @@ def senderSocket(destinationIP, destinationPort):
     try:
         # AF_INET for IPv4          SOCK_DGRAM for UDP
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         serverSocket.connect((destinationIP, destinationPort))
         return serverSocket
 
-    except socket.error:
-        print("Unable to connect to server")
+    except Exception as e:
+        print(e)
 
 
 #############################################################################################################
@@ -67,8 +69,9 @@ def senderSocketUDP(destinationIP, destinationPort):
     try:
         # AF_INET for IPv4          SOCK_DGRAM for UDP
         serverSocket = socket.socket(socket.SOCK_DGRAM, socket.SOCK_STREAM)
+        serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         serverSocket.connect((destinationIP, destinationPort))
         return serverSocket
 
-    except socket.error:
-        print("Unable to connect to server")
+    except Exception as e:
+        print(e)

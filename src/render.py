@@ -38,7 +38,7 @@ def clientConnect(clientSocket):
 # Attempts to connect to the server
 #############################################################################################################
 def serverSend(fileID):
-    time.sleep(5)  # Necessary !! DO NOT REMOVE
+    time.sleep(6)  # Necessary !! DO NOT REMOVE
     # send ID to server to get file from
     serverSocket = protocol.senderSocket(protocol.SERVER_IP, protocol.SERVER_PORT_2)
     serverSocket.sendall(fileID.encode())  # send the ID

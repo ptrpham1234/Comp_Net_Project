@@ -25,17 +25,16 @@ def main():
 # creates the client socket and manages the list call
 #############################################################################################################
 def clientConnect(fileHolder):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSock:
-        clientSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
-        clientSock.listen()
-        connect, addr = clientSock.accept()
+    clientSock = protocol.receiverSocket(protocol.SERVER_IP, protocol.SERVER_PORT)
+    clientSock.listen()
+    connect, addr = clientSock.accept()
 
-        print(f"new connection from: {addr}")
-        connect.recv(1024)
-        msg = str(json.dumps(fileHolder))
-        connect.send(msg.encode())
-        connect.close()
-        clientSock.close()
+    print(f"new connection from: {addr}")
+    connect.recv(1024)
+    msg = str(json.dumps(fileHolder))
+    connect.send(msg.encode())
+    connect.close()
+    clientSock.close()
     time.sleep(1)
     renderConnect(Files())
 
@@ -49,40 +48,40 @@ def clientConnect(fileHolder):
 # creates the render socket and manages the calls to render files
 #############################################################################################################
 def renderConnect(fileList):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as renderSock:
-        renderSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT_2))
-        renderSock.listen()
-        connect, addr = renderSock.accept()
-        print(f"new connection from: {addr}")
-        fileID = int(connect.recv(1024).decode())
 
-        file = fileList.getFileDict(fileID)
+    renderSock = protocol.receiverSocket(protocol.SERVER_IP, protocol.SERVER_PORT_2)
+    renderSock.listen()
+    connect, addr = renderSock.accept()
+    print(f"new connection from: {addr}")
+    fileID = int(connect.recv(1024).decode())
 
-        if file:
-            state = [True, False, False]  # Sending data | restarting | done sending (for Thread)
-            control = threading.Thread(target=controlsThread, args=(state,))
-            control.start()
-            try:
-                with open(file["filename"], "r") as returnFile:
-                    lines = returnFile.readline()
-                    while lines:
+    file = fileList.getFileDict(fileID)
+
+    if file:
+        state = [True, False, False]  # Sending data | restarting | done sending (for Thread)
+        control = threading.Thread(target=controlsThread, args=(state,))
+        control.start()
+        try:
+            with open(file["filename"], "r") as returnFile:
+                lines = returnFile.readline()
+                while lines:
+                    time.sleep(.8)
+                    while state[0] is False:
                         time.sleep(.8)
-                        while state[0] is False:
-                            time.sleep(.8)
-                        if state[1]:
-                            state[1] = False
-                            returnFile.seek(0, 0)
-                            lines = returnFile.readline()
-                        connect.sendall(lines.encode())
+                    if state[1]:
+                        state[1] = False
+                        returnFile.seek(0, 0)
                         lines = returnFile.readline()
-                    connect.sendall("done".encode())
-            except BrokenPipeError:
-                print("Connection lost to Render while streaming")
-            state[2] = True
-        else:
-            connect.send("missing file")
-        connect.close()
-        renderSock.close()
+                    connect.sendall(lines.encode())
+                    lines = returnFile.readline()
+                connect.sendall("done".encode())
+        except BrokenPipeError:
+            print("Connection lost to Render while streaming")
+        state[2] = True
+    else:
+        connect.send("missing file")
+    connect.close()
+    renderSock.close()
 
 #############################################################################################################
 # Function:            renderConnect
@@ -94,6 +93,7 @@ def renderConnect(fileList):
 #############################################################################################################
 def controlsThread(state):
     controls = protocol.receiverSocket(protocol.SERVER_IP, 4819)
+    controls.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     controls.settimeout(1)
     controls.listen()
     while True:
