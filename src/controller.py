@@ -56,7 +56,16 @@ def sendListRequest(serverSocket):
     msg = serverSocket.recv(1024).decode()
 
     print("List of files:")
-    print(json.loads(msg))
+    
+    for index, file in enumerate(msg):
+        print((index + 1), ". ", file["filename"])
+        if file["filetype"] == "text":
+            print("\ttext file")
+        elif file["filetype"] == "sound":
+            print("\tsound file")
+        else:
+            print("\tvideo")
+        print("\t", file["description"])
     serverSocket.close()
 
 
