@@ -20,6 +20,7 @@ def main():
             print("closing connections...")
             time.sleep(2)
             sys.stdin.flush()
+            print("type any value to clear buffer")
         elif choice == 2:
             printFileList(fileList)
         elif choice == 3:
@@ -156,9 +157,11 @@ class KeyboardThread(threading.Thread):
 
     def run(self):
         while not self.event.is_set():
-            self.input_cbk(input())  # Problem Here: wait here forever until user enters something
+            ins = input()
+            if not self.event.is_set():
+                self.input_cbk(ins) # Problem Here: wait here forever until user enters something
 
-        print("thread done")
+        #print("thread done")
 
 
 
@@ -202,19 +205,21 @@ def receiveStream():
     print("Streaming from: " + str(ipAddress))
 
     event = threading.Event()
+    done=[]
     kthread = KeyboardThread(event, my_callback)
     while not done:
         msg = connection.recv(1024).decode()
         if msg != "done":
             print(msg, end="")
+            #print(f"\nDebug - Message=|{msg}| - Condition={msg!='done'}")
         else:
-            print("streaming done")
+            print("\nstreaming done")
             streamSocket.close()
             done = True
 
     print("closing Thread")
     event.set()  # close the thread
-    kthread.join()  # Problem Here: never joins so never stop but will continue if thread is daemon
+    kthread.join(timeout=1)  # Problem Here: never joins so never stop but will continue if thread is daemon
     connection.close()
     streamSocket.close()
 

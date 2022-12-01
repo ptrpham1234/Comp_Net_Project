@@ -74,7 +74,8 @@ def renderConnect(fileList):
                         lines = returnFile.readline()
                     connect.sendall(lines.encode())
                     lines = returnFile.readline()
-                connect.sendall("done".encode())
+                time.sleep(.8)
+                connect.send("done".encode())
         except BrokenPipeError:
             print("Connection lost to Render while streaming")
         state[2] = True
@@ -94,7 +95,7 @@ def renderConnect(fileList):
 def controlsThread(state):
     controls = protocol.receiverSocket(protocol.SERVER_IP, 4819)
     controls.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    controls.settimeout(1)
+    #controls.settimeout(1)
     controls.listen()
     while True:
         try:
