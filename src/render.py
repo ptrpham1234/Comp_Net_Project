@@ -72,7 +72,7 @@ def serverSend(fileID):
 #############################################################################################################
 def controlsThread(state):
     controls = protocol.receiverSocket(protocol.RENDER_IP, 4818)
-    controls.settimeout(1)
+    #controls.settimeout(1)
     controls.listen()
     while True:
         try:
