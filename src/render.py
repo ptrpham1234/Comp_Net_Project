@@ -5,9 +5,10 @@ import time
 
 
 def main():
-    clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
-    fileID = clientConnect(clientSocket)
-    serverSend(fileID)
+    while True:
+        clientSocket = protocol.receiverSocket(protocol.RENDER_IP, protocol.RENDER_PORT)
+        fileID = clientConnect(clientSocket)
+        serverSend(fileID)
 
 
 #############################################################################################################
@@ -45,39 +46,62 @@ def serverSend(fileID):
 
     controllerSend = protocol.senderSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
 
-    state = [True]
-    control = threading.Thread(target=controlsThread,args=(state,))
+    state = [True, False]  # Play/Pause  |  stop thread
+    control = threading.Thread(target=controlsThread, args=(state,))
     control.start()
     while not done:
         if state[0]:
             time.sleep(.5)
             msg = serverSocket.recv(1024).decode()
+            if msg == "done":
+                state[1] = True
+                controllerSend.sendall(msg.encode())
+                break
+            else:
+                controllerSend.sendall(msg.encode())
+    serverSocket.close()
+    controllerSend.close()
 
-            print(msg)
-            controllerSend.sendall(msg.encode())
-
-
+#############################################################################################################
+# Function:            establishConnection
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Attempts to connect to the server
+#############################################################################################################
 def controlsThread(state):
-    controls = protocol.receiverSocket(protocol.RENDER_IP,4818)
+    controls = protocol.receiverSocket(protocol.RENDER_IP, 4818)
+    controls.settimeout(1)
     controls.listen()
-    while(True):
-        connection, ipaddress = controls.accept()
-        print("connected to" + str(ipaddress))
-        command = connection.recv(1024).decode()
-        print('Recieved the command to: ' + str(command))
-        if command == 'pause':
-            state[0] = False
-            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
-            notify.sendall('pause'.encode())
-            notify.close()
-        elif command == 'resume':
-            state[0] = True
-            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
-            notify.sendall('resume'.encode())
+    while True:
+        try:
+            connection, ipaddress = controls.accept()
+            print("connected to" + str(ipaddress))
+            command = connection.recv(1024).decode()
+            print('Received the command to: ' + str(command))
+            if command == 'pause':
+                state[0] = False
+                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify.sendall('pause'.encode())
+                notify.close()
+            elif command == 'resume':
+                state[0] = True
+                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify.sendall('resume'.encode())
+            elif command == 'restart':
+                notify = protocol.senderSocket(protocol.SERVER_IP, 4819)
+                notify.sendall('restart'.encode())
 
-        elif command == 'restart':
-            notify = protocol.senderSocket(protocol.SERVER_IP,4819)
-            notify.sendall('restart'.encode())
+        except TimeoutError:
+            if state[1]:
+                break
+            else:
+                continue
+
+    controls.close()
+
 
 if __name__ == "__main__":
     main()
+    print("done")

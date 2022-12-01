@@ -10,8 +10,10 @@ from files import Files
 
 
 def main():
-    fileLists = Files()
-    clientConnect(fileLists.getList())
+    while True:
+        fileLists = Files()
+        clientConnect(fileLists.getList())
+
 
 
 #############################################################################################################
@@ -47,7 +49,6 @@ def clientConnect(fileHolder):
 # creates the render socket and manages the calls to render files
 #############################################################################################################
 def renderConnect(fileList):
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as renderSock:
         renderSock.bind((protocol.SERVER_IP, protocol.SERVER_PORT_2))
         renderSock.listen()
@@ -58,48 +59,64 @@ def renderConnect(fileList):
         file = fileList.getFileDict(fileID)
 
         if file:
-            state = [True,False] #Sending data | restarting
-            print('hi2')
-            control = threading.Thread(target=controlsThread,args=(state,))
+            state = [True, False, False]  # Sending data | restarting | done sending (for Thread)
+            control = threading.Thread(target=controlsThread, args=(state,))
             control.start()
             try:
                 with open(file["filename"], "r") as returnFile:
-                    print('hi')
                     lines = returnFile.readline()
-                    while(lines):
+                    while lines:
                         time.sleep(.8)
-                        while(state[0] is False):
+                        while state[0] is False:
                             time.sleep(.8)
-                        if(state[1]):
+                        if state[1]:
                             state[1] = False
-                            returnFile.seek(0,0)
+                            returnFile.seek(0, 0)
                             lines = returnFile.readline()
                         connect.sendall(lines.encode())
                         lines = returnFile.readline()
                     connect.sendall("done".encode())
             except BrokenPipeError:
                 print("Connection lost to Render while streaming")
+            state[2] = True
         else:
             connect.send("missing file")
         connect.close()
+        renderSock.close()
 
-
+#############################################################################################################
+# Function:            renderConnect
+# Author:              Troy Curtsinger (tjc190001)
+# Date Started:        11/29/2022
+#
+# Description:
+# creates the render socket and manages the calls to render files
+#############################################################################################################
 def controlsThread(state):
-    controls = protocol.receiverSocket(protocol.SERVER_IP,4819)
+    controls = protocol.receiverSocket(protocol.SERVER_IP, 4819)
+    controls.settimeout(1)
     controls.listen()
-    while(True):
-        connection, ipaddress = controls.accept()
-        print("connected to" + str(ipaddress))
-        command = connection.recv(1024).decode()
-        print('Recieved the command to: '+str(command))
-        if command == 'pause':
-            state[0] = False
-        elif command == 'resume':
-            state[0] = True
-        elif command == 'restart':
-            state[1] = True
+    while True:
+        try:
+            connection, ipaddress = controls.accept()
+            print("connected to" + str(ipaddress))
+            command = connection.recv(1024).decode()
+            print('Received the command to: ' + str(command))
+            if command == 'pause':
+                state[0] = False
+            elif command == 'resume':
+                state[0] = True
+            elif command == 'restart':
+                state[1] = True
+        except TimeoutError:
+            if state[2]:
+                break
+            else:
+                continue
+    controls.close()
 
 
 
 if __name__ == "__main__":
     main()
+    print("done")

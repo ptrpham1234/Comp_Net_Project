@@ -56,6 +56,7 @@ def sendListRequest(serverSocket):
     msg = serverSocket.recv(1024).decode()
 
     print("List of files:")
+    
     for index, file in enumerate(msg):
         print((index + 1), ". ", file["filename"])
         if file["filetype"] == "text":
@@ -65,6 +66,7 @@ def sendListRequest(serverSocket):
         else:
             print("\tvideo")
         print("\t", file["description"])
+    serverSocket.close()
 
 
 #############################################################################################################
@@ -98,6 +100,14 @@ def sendFileRequest(fileID):
     renderSocket.close()
 
 
+#############################################################################################################
+# Function:            sendFileRequest
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Asks what file the user wants to stream
+#############################################################################################################
 class KeyboardThread(threading.Thread):
     def __init__(self, input_cbk=None, name='keyboard-input-thread'):
         self.input_cbk = input_cbk
@@ -109,6 +119,14 @@ class KeyboardThread(threading.Thread):
             self.input_cbk(input())
 
 
+#############################################################################################################
+# Function:            sendFileRequest
+# Author:              Peter Pham (pxp180041)
+# Date Started:        08/10/2022
+#
+# Description:
+# Asks what file the user wants to stream
+#############################################################################################################
 def my_callback(inp):
     print('You entered: ', inp)
     if inp == 'pause':
@@ -134,7 +152,6 @@ def my_callback(inp):
 # Asks what file the user wants to stream
 #############################################################################################################
 def receiveStream():
-    # streamSocket = protocol.receiverSocket('0.0.0.0', 4815)
     done = False
     streamSocket = protocol.receiverSocket(protocol.CONTROLLER_IP, protocol.CONTROLLER_PORT)
     streamSocket.listen()
@@ -150,6 +167,9 @@ def receiveStream():
             print("streaming done")
             streamSocket.close()
             done = True
+
+    connection.close()
+    streamSocket.close()
 
 
 if __name__ == "__main__":
